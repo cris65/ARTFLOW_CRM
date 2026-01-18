@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ArtFlow CRM - Gestione Galleria d'Arte">
+    <meta name="theme-color" content="#c5a059">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <title>ArtFlow CRM</title>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-palette2"></i>
+                ArtFlow <span class="brand-accent">CRM</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3">
+                <!-- Language Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-gold dropdown-toggle" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-globe2"></i>
+                        <span id="currentLang">IT</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                        <li>
+                            <a class="dropdown-item" href="#" data-lang="it">
+                                <span class="fi fi-it me-2">🇮🇹</span> Italiano
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-lang="en">
+                                <span class="fi fi-gb me-2">🇬🇧</span> English
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Add Button -->
+                <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#artworkModal" id="btnAddNew">
+                    <i class="bi bi-plus-lg"></i>
+                    <span data-i18n="addArtwork">Nuova Opera</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        <!-- Dashboard Stats -->
+        <section class="row g-4 mb-5" id="dashboard">
+            <!-- Total Artworks -->
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-images"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statTotal">0</span>
+                        <span class="stat-label" data-i18n="totalArtworks">Opere Totali</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Total Value -->
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-currency-euro"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statValue">€0</span>
+                        <span class="stat-label" data-i18n="totalValue">Valore Inventario</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- On Loan -->
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statLoan">0</span>
+                        <span class="stat-label" data-i18n="onLoan">In Prestito</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search & Filter -->
+        <section class="search-section mb-4">
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input 
+                    type="text" 
+                    class="form-control search-input" 
+                    id="searchInput" 
+                    data-i18n-placeholder="searchPlaceholder"
+                    placeholder="Cerca per titolo, artista...">
+            </div>
+        </section>
+
+        <!-- Artworks Table (Desktop) -->
+        <section class="table-section d-none d-lg-block">
+            <div class="table-responsive">
+                <table class="table artworks-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="thTitle">Titolo</th>
+                            <th data-i18n="thArtist">Artista</th>
+                            <th data-i18n="thYear">Anno</th>
+                            <th data-i18n="thPrice">Prezzo</th>
+                            <th data-i18n="thStatus">Stato</th>
+                            <th data-i18n="thActions">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="artworksTableBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty State -->
+            <div class="empty-state d-none" id="emptyStateTable">
+                <i class="bi bi-inbox"></i>
+                <h5 data-i18n="noArtworks">Nessuna opera trovata</h5>
+                <p data-i18n="noArtworksDesc">Inizia aggiungendo la tua prima opera d'arte</p>
+            </div>
+        </section>
+
+        <!-- Artworks Cards (Mobile) -->
+        <section class="cards-section d-lg-none">
+            <div class="row g-3" id="artworksCardsContainer">
+                <!-- Dynamic content -->
+            </div>
+            
+            <!-- Empty State Mobile -->
+            <div class="empty-state d-none" id="emptyStateMobile">
+                <i class="bi bi-inbox"></i>
+                <h5 data-i18n="noArtworks">Nessuna opera trovata</h5>
+                <p data-i18n="noArtworksDesc">Inizia aggiungendo la tua prima opera d'arte</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="mb-0">
+                <i class="bi bi-palette2 me-1"></i>
+                ArtFlow CRM © 2024 — <span data-i18n="footerText">Gestione Galleria d'Arte</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Artwork Modal -->
+    <div class="modal fade" id="artworkModal" tabindex="-1" aria-labelledby="artworkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="artworkModalLabel" data-i18n="modalTitleAdd">Aggiungi Opera</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="artworkForm">
+                        <input type="hidden" id="artworkId">
+                        
+                        <div class="mb-3">
+                            <label for="artworkTitle" class="form-label" data-i18n="labelTitle">Titolo</label>
+                            <input type="text" class="form-control" id="artworkTitle" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="artworkArtist" class="form-label" data-i18n="labelArtist">Artista</label>
+                            <input type="text" class="form-control" id="artworkArtist" required>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="artworkYear" class="form-label" data-i18n="labelYear">Anno</label>
+                                <input type="number" class="form-control" id="artworkYear" min="1000" max="2030" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="artworkPrice" class="form-label" data-i18n="labelPrice">Prezzo (€)</label>
+                                <input type="number" class="form-control" id="artworkPrice" min="0" step="100" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="artworkStatus" class="form-label" data-i18n="labelStatus">Stato</label>
+                            <select class="form-select" id="artworkStatus" required>
+                                <option value="available" data-i18n="statusAvailable">Disponibile</option>
+                                <option value="sold" data-i18n="statusSold">Venduto</option>
+                                <option value="loan" data-i18n="statusLoan">In Prestito</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="btnCancel">Annulla</button>
+                    <button type="button" class="btn btn-gold" id="btnSaveArtwork" data-i18n="btnSave">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-i18n="deleteTitle">Conferma Eliminazione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="bi bi-exclamation-triangle text-warning display-4"></i>
+                    <p class="mt-3" data-i18n="deleteConfirm">Sei sicuro di voler eliminare questa opera?</p>
+                    <input type="hidden" id="deleteArtworkId">
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="btnCancel">Annulla</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmDelete" data-i18n="btnDelete">Elimina</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toastNotification" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Operazione completata con successo!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
+    
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('✅ Service Worker registrato'))
+                    .catch(err => console.log('❌ SW Error:', err));
+            });
+        }
+    </script>
+</body>
+</html>
